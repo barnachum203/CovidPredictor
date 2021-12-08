@@ -1,18 +1,15 @@
 package com.philips.project.msdb.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 import com.philips.project.msdb.beans.Person;
-import com.philips.project.msdb.services.PersonManager;
+import com.philips.project.msdb.services.PersonService;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Map;
 
 
 @RestController
@@ -20,7 +17,7 @@ import java.util.Map;
 public class PersonController {
 
 	@Autowired
-	private PersonManager personManager;
+	private PersonService personService;
 	@Autowired
 	private RestTemplate client;
 	private static String report_URL = "http://localhost:8081/report/";
@@ -29,14 +26,14 @@ public class PersonController {
 	@GetMapping("all")
 	public Iterable<Person> getAll()
 	{
-		return this.personManager.getAllPersons();
+		return this.personService.getAllPersons();
 	}
 
 	@PostMapping("add")
 	public ResponseEntity<?> addProduct(Person person)
 	{
 		try {
-			personManager.addPerson(person);
+			personService.addPerson(person);
 			return new ResponseEntity<Void>(HttpStatus.OK);
 		} catch (Exception e) {
 			System.out.println("Error");
@@ -47,7 +44,7 @@ public class PersonController {
 	@DeleteMapping("remove")
 	public ResponseEntity<?> removePerson(int personId)
 	{
-		personManager.removePerson(personId);
+		personService.removePerson(personId);
 		return new ResponseEntity<Void>(HttpStatus.OK);
 	}
 
@@ -55,7 +52,7 @@ public class PersonController {
 	public ResponseEntity<?> updatePersonResult(int id,String result)
 	{
 		try {
-			personManager.updatePersonResult(id, result);
+			personService.updatePersonResult(id, result);
 			return new ResponseEntity<Void>(HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -67,7 +64,7 @@ public class PersonController {
 	public ResponseEntity<?> updatePersonDate(int id,String date)
 	{
 		try {
-			personManager.updatePersonDate(id, date);
+			personService.updatePersonDate(id, date);
 			return new ResponseEntity<Void>(HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -77,7 +74,7 @@ public class PersonController {
 
 	@GetMapping("list/{date}")
 	public void refreshDB(@PathVariable String date){
-		this.personManager.fetchAPIData(date);
+		this.personService.fetchAPIData(date);
 	}
 
 	@GetMapping("daily/{date}")
@@ -87,7 +84,7 @@ public class PersonController {
 		System.out.println("Date: " + date);
 
 		HashMap<String, Integer> result ;//= new HashMap<>();
-		result = personManager.sendDailyParams(date);
+		result = personService.sendDailyParams(date);
 
 		int positives = result.get("positives");
 		int numberOfPCRs = result.get("numberOfPCRs");
