@@ -13,7 +13,7 @@ import java.util.HashMap;
 
 
 @RestController
-@RequestMapping("person")
+@RequestMapping("api")
 public class PersonController {
 
 	@Autowired
@@ -23,14 +23,14 @@ public class PersonController {
 	private static String report_URL = "http://localhost:8081/report/";
 
 
-	@GetMapping("all")
+	@GetMapping("get/All")
 	public Iterable<Person> getAll()
 	{
 		return this.personService.getAllPersons();
 	}
 
-	@PostMapping("add")
-	public ResponseEntity<?> addProduct(Person person)
+	@PostMapping("add/person")
+	public ResponseEntity<?> addPerson(@RequestBody Person person)
 	{
 		try {
 			personService.addPerson(person);
@@ -41,18 +41,18 @@ public class PersonController {
 		}
 	}
 
-	@DeleteMapping("remove")
-	public ResponseEntity<?> removePerson(int personId)
+	@DeleteMapping("remove/patient/{personId}")
+	public ResponseEntity<?> removePerson(@PathVariable int personId)
 	{
 		personService.removePerson(personId);
 		return new ResponseEntity<Void>(HttpStatus.OK);
 	}
 
-	@PutMapping("updateResult")
-	public ResponseEntity<?> updatePersonResult(int id,String result)
+	@PutMapping("update/patient/result/{personId}/{result}")
+	public ResponseEntity<?> updatePersonResult(@PathVariable int personId,@PathVariable String result)
 	{
 		try {
-			personService.updatePersonResult(id, result);
+			personService.updatePersonResult(personId, result);
 			return new ResponseEntity<Void>(HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -60,8 +60,9 @@ public class PersonController {
 		}
 	}
 
-	@PutMapping("updateDate")
-	public ResponseEntity<?> updatePersonDate(int id,String date)
+
+	@PutMapping("update/patient/result/{personId}/{date}")
+	public ResponseEntity<?> updatePersonDate(@PathVariable int id,@PathVariable String date)
 	{
 		try {
 			personService.updatePersonDate(id, date);
@@ -72,57 +73,49 @@ public class PersonController {
 		}
 	}
 
-	@GetMapping("list/{date}")
-	public void refreshDB(@PathVariable String date){
-		this.personService.fetchAPIData(date);
+	/**
+	 * Update db from MOH API by date.
+	 * this will not replace existing data
+	 * //TODO: this func should replace existing data (?)
+	 * @param date
+	 * @return Response
+	 */
+	@PostMapping("update/db/{date}")
+	public ResponseEntity<?> updateDBFromAPIByDate(@PathVariable String date) {
+		int result = 0;
+
+		if (!date.isEmpty()) {
+			result = this.personService.fetchAPIData(date);
+		}
+
+		if (result == 1) {
+			return new ResponseEntity<String>("Updated results fo date: " + date, HttpStatus.OK);
+		} else {
+			return new ResponseEntity<String>("Wrong date format", HttpStatus.NOT_ACCEPTABLE);
+		}
 	}
 
-	@GetMapping("daily/{date}")
+	/**
+	 * This function send daily data to Analytics
+	 * @param date
+	 */
+	@GetMapping("get/db/daily/{date}")
 	public void sendDailyParams(@PathVariable String date){
 
+		System.out.println("Date: " + date );
 
-		System.out.println("Date: " + date);
-
-		HashMap<String, Integer> result ;//= new HashMap<>();
+		HashMap<String, Integer> result ;
 		result = personService.sendDailyParams(date);
+
 
 		int positives = result.get("positives");
 		int numberOfPCRs = result.get("numberOfPCRs");
 		String url = report_URL+"daily/"+date+"/"+positives+"/"+numberOfPCRs;
 
-		System.out.println(positives);
-		System.out.println(numberOfPCRs);
-		System.out.println(url);
-
 		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
 
-//		this.client.postForEntity(url, HttpMethod.POST ,result, String.class);
 		this.client.postForEntity(url,HttpMethod.POST,String.class,result);
 
-//		return client.exchange(url, HttpMethod.POST, result, String.class);
-
-
-		// create headers
-//		HttpHeaders headers = new HttpHeaders();
-		// set `content-type` header
-//		headers.setContentType(MediaType.APPLICATION_JSON);
-		// set `accept` header
-//		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-
-		// create a map for post parameters
-//		Map<String, Object> map = new HashMap<>(result);
-//		map.put("userId", 1);
-//		map.put("title", "Introduction to Spring Boot");
-//		map.put("body", "Spring Boot makes it easy to create stand-alone, production-grade Spring based Applications.");
-
-		// build the request
-//		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(map, headers);
-//
-		// send POST request
-//		ResponseEntity<String> response = this.client.postForEntity(url, entity, String.class);
-
-
-//		System.out.println(response);
 	}
 
 }

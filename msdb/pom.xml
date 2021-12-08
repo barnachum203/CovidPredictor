@@ -82,10 +82,18 @@
 			<version>2.8.5</version>
 		</dependency>
 
+<!--		Create fake data-->
 		<dependency>
 			<groupId>com.github.javafaker</groupId>
 			<artifactId>javafaker</artifactId>
 			<version>0.12</version>
+		</dependency>
+
+<!--		 Date Validator-->
+		<dependency>
+			<groupId>commons-validator</groupId>
+			<artifactId>commons-validator</artifactId>
+			<version>1.6</version>
 		</dependency>
 	</dependencies>
 

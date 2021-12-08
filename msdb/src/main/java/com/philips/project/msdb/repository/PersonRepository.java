@@ -37,4 +37,5 @@ public interface PersonRepository extends JpaRepository<Person, Integer>{
 	@Query(value = "SELECT * FROM person where date=:date", nativeQuery=true)
 	public List<Person> findByResultDate(String date);
 
+
 }
