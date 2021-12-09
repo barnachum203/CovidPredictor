@@ -15,7 +15,7 @@ public class Report {
     private double positiveRatio; // ratio = positive/negative
     private int patients; // number of PCRs
     private int positivePCR; // positive PCRs
-
+    private int accumPositives;
 
     public int calculatePatients(){
         //TODO: implement calculator

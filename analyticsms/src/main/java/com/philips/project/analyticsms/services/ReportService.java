@@ -48,6 +48,81 @@ public class ReportService {
 //    }
 
 
+    public void autoRecieveData(String date, int positives, int numberOfPCRs) {  // when db inserted to msdb, this function will be called
+        Report newReport =  this.reportRepository.findByDate(date);
+        System.out.println("auto called");
+    	if (newReport == null) {
+        	newReport = new Report();
+        }
+        
+    	newReport.setPatients(numberOfPCRs);
+    	newReport.setDate(date);
+        newReport.setPositiveRatio(positives/(numberOfPCRs-positives));
+        newReport.setPositivePCR(positives);
+        
+        System.out.println(newReport);
+        reportRepository.save(newReport);
+
+        newReport.setAccumPositives(calculateDailyReport(date));
+        System.out.println(newReport.getAccumPositives());
+    }
+
+    
+    //Get prediction by date
+    public  void getPredictionReportByDate(String endDate) {   // range of prediction ... need to add another date
+    	
+    	String startDate  = LocalDate.parse(endDate).minusDays(14).toString();  // currently checking 15 days
+    	List<Report> reports = reportRepository.getSecondCustomQuery(startDate,endDate);
+    	System.out.println("start");
+    	for(Report report : reports) {
+    		System.out.println(report);
+    	}
+    	System.out.println("end");
+
+    }
+
+    public  int calculateDailyReport(String date) {    //return prediction of positive patient
+    	
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate oneWeekAgo = LocalDate.parse(date,formatter).minusDays(7);
+        LocalDate twoWeeksAgo = LocalDate.parse(date,formatter).minusDays(14);
+        LocalDate oneDayAgo = LocalDate.parse(date,formatter).minusDays(1);
+
+
+        //Test
+        System.out.println("yesterday: " + oneWeekAgo);
+        System.out.println("twoWeeksAgo: " + twoWeeksAgo);
+        
+        
+        Report currDateReport =  this.reportRepository.findByDate(date);
+        Report yesterdayDate =  this.reportRepository.findByDate(oneDayAgo.toString());
+        Report day7Report = this.reportRepository.findByDate(oneWeekAgo.toString());
+        Report day14Report = reportRepository.findByDate(twoWeeksAgo.toString());
+
+        int accumYesterday =   yesterdayDate   == null?    0:yesterdayDate.getAccumPositives();      
+
+        int todayPositive  =   currDateReport  == null?    0:currDateReport.getPositivePCR();
+        int sevenAgo       =   day7Report      == null?	 0:day7Report.getPositivePCR();
+        int fourTeenAgo    =   day14Report     == null?    0:day14Report.getPositivePCR();
+
+ 
+        int sum =(int) (todayPositive + accumYesterday - 0.8*sevenAgo  - fourTeenAgo*0.2)    ;
+
+        if(currDateReport  == null) {
+        	currDateReport = new Report();
+        	currDateReport.setDate(date);
+        }        
+    	currDateReport.setAccumPositives(sum);
+
+        System.out.println(currDateReport);
+        reportRepository.save(currDateReport);
+        return sum;
+    }
+
+    
+    
+    
+    
     /**
      * This function create new daily report
      * @param date
@@ -57,7 +132,7 @@ public class ReportService {
      * -0.8*(R[date.minusDays(7)].positives-R[date.minusDays(8)])
      * -0.2*(R[date.minusDays(14)]-R[date.minusDays(15)])
      */
-    public void calculateDailyReport(String date, int positives, int numberOfPCRs) {
+ /*   public void calculateDailyReport(String date, int positives, int numberOfPCRs) {
         Report newReport = new Report();
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -91,7 +166,7 @@ public class ReportService {
 
         System.out.println(newReport);
         reportRepository.save(newReport);
-    }
+    }*/
 
 
 }
