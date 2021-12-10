@@ -115,7 +115,6 @@ public class HospitalService {
         switch (option) {
             case "north":
                 for (Hospital h : hospitals) {
-                    System.out.println("north");
                     if (h.getArea() == AreaEnum.North) {
                         result += h.getNumOfBeds();
                     }
@@ -123,8 +122,6 @@ public class HospitalService {
                 break;
             case "south":
                 for (Hospital h : hospitals) {
-                    System.out.println("South");
-
                     if (h.getArea() == AreaEnum.South) {
                         result += h.getNumOfBeds();
                     }
@@ -132,8 +129,6 @@ public class HospitalService {
                 break;
             case "central":
                 for (Hospital h : hospitals) {
-                    System.out.println("Central");
-
                     if (h.getArea() == AreaEnum.Central) {
                         result += h.getNumOfBeds();
                     }
@@ -141,8 +136,6 @@ public class HospitalService {
                 break;
             default:
                 for (Hospital h : hospitals) {
-                    System.out.println("default");
-
                     result += h.getNumOfBeds();
                 }
                 break;
