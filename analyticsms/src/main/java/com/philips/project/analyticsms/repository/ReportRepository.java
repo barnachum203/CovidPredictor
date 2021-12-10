@@ -18,7 +18,7 @@ public interface ReportRepository extends JpaRepository<Report , Integer> {
     @Transactional
     @Modifying
     @Query(value = "SELECT * FROM report WHERE date BETWEEN :startDate AND :endDate",nativeQuery = true)
-    public List<Report> getSecondCustomQuery(@Param("startDate") String first,@Param("endDate") String second);
+    public List<Report> getReportsBetweenDatesQuery(@Param("startDate") String first,@Param("endDate") String second);
 
 
 }

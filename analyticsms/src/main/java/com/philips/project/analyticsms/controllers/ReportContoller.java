@@ -38,17 +38,11 @@ public class ReportContoller {
     }
 
     
-    @GetMapping("predict")               // predicts how many positive in specific date
-    public void getPredictionReportByDate(String date){
-         reportService.getPredictionReportByDate(date);
+    @GetMapping("predict/{startDate}/{endDate}")               // predicts how many positive in specific date
+    public String getPredictionReportByDate(@PathVariable String startDate ,@PathVariable String endDate) throws JsonProcessingException{
+         return reportService.getPredictionBetweenDatesReport(endDate , startDate );
     }
     
-
-
-    @PostMapping("/add")
-    public void createReport(@RequestBody Report report){
-        reportService.addReport(report);
-    }
 
 
     @PostMapping("daily/{date}/{positives}/{numberOfPCRs}")
@@ -60,24 +54,19 @@ public class ReportContoller {
         reportService.autoRecieveData(date, positives, numberOfPCRs);
     }
 
-    @PostMapping("report/{date}")
-	public ResponseEntity<String> calculateDailyReport(@PathVariable String date) {
-    	int result = reportService.calculateDailyReport(date);
-    	/*     return json in http body status. */
-    	Map<String , Integer> hm = new HashMap<String,Integer>();
-    	hm.put(date, result);
-    	String json = null;
-		try {
-			json = new ObjectMapper().writeValueAsString(hm);
-		} catch (JsonProcessingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} 
-    	return new ResponseEntity<String>(json, HttpStatus.OK);
-
-
+    @GetMapping("report/{date}")
+	public String calculateDailyReport(@PathVariable String date) throws JsonProcessingException {
+    	Report report = reportService.calculateDailyReport(date);
+        ObjectMapper mapper = new ObjectMapper();
+	    String json = mapper.writeValueAsString(report);
+    	return json  ;
 	}
 
+    
+    
+    
+    
+    
  /*   @PostMapping("daily/{date}/{positives}/{numberOfPCRs}")
     public void calculateDailyReport(@PathVariable String date,@PathVariable int positives,@PathVariable int numberOfPCRs){
 
