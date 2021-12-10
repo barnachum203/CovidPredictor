@@ -35,14 +35,11 @@ public interface PersonRepository extends JpaRepository<Person, Integer>{
 	@Query(value = "SELECT * FROM person where date=:date", nativeQuery=true)
 	public List<Person> findByResultDate(String date);
 
-<<<<<<< Updated upstream
 //	@Transactional
 //	@Modifying
 //	@Query("select case when count(p)> 0 then true else false end from Person p where p.date=:date")
 //	public int existsPersonByResultDate(String date);
 
-=======
 	@Query(value = "select COUNT(result) from person where area=:area and date=:date and result=:boolresult", nativeQuery=true)
 	public int getPostiveOfCorona(int area,String date,boolean boolresult);
->>>>>>> Stashed changes
 }
