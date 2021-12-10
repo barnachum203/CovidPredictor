@@ -1,5 +1,7 @@
 package com.philips.project.analyticsms.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.philips.project.analyticsms.beans.Report;
 import com.philips.project.analyticsms.repository.ReportRepository;
 import org.joda.time.DateTime;
@@ -46,7 +48,21 @@ public class ReportService {
 //    public int calculateReport(Person[] reports){
 //
 //    }
-
+    //Get prediction by date
+    public  String getPredictionBetweenDatesReport(String endDate ,String startDate) throws JsonProcessingException {   // range of prediction ... need to add another date
+    	
+    //	String startDate  = LocalDate.parse(endDate).minusDays(14).toString();  // currently checking 15 days
+    	List<Report> reports = reportRepository.getReportsBetweenDatesQuery(startDate,endDate);
+    	System.out.println("start");
+    	for(Report report : reports) {
+    		System.out.println(report);
+    	}
+    	System.out.println("end");
+        ObjectMapper mapper = new ObjectMapper();
+ 	    String json = mapper.writeValueAsString(reports); 
+     	return json;
+    }
+    
 
     public void autoRecieveData(String date, int positives, int numberOfPCRs) {  // when db inserted to msdb, this function will be called
         Report newReport =  this.reportRepository.findByDate(date);
@@ -62,26 +78,14 @@ public class ReportService {
         
         System.out.println(newReport);
         reportRepository.save(newReport);
-
-        newReport.setAccumPositives(calculateDailyReport(date));
+    
+        newReport.setAccumPositives(calculateDailyReport(date).getAccumPositives());
         System.out.println(newReport.getAccumPositives());
     }
 
     
-    //Get prediction by date
-    public  void getPredictionReportByDate(String endDate) {   // range of prediction ... need to add another date
-    	
-    	String startDate  = LocalDate.parse(endDate).minusDays(14).toString();  // currently checking 15 days
-    	List<Report> reports = reportRepository.getSecondCustomQuery(startDate,endDate);
-    	System.out.println("start");
-    	for(Report report : reports) {
-    		System.out.println(report);
-    	}
-    	System.out.println("end");
 
-    }
-
-    public  int calculateDailyReport(String date) {    //return prediction of positive patient
+    public  Report calculateDailyReport(String date) {    //return prediction of positive patient
     	
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         LocalDate oneWeekAgo = LocalDate.parse(date,formatter).minusDays(7);
@@ -116,12 +120,20 @@ public class ReportService {
 
         System.out.println(currDateReport);
         reportRepository.save(currDateReport);
-        return sum;
+        return currDateReport;
     }
 
+    private String createJson(Report report) throws JsonProcessingException {
+    	 ObjectMapper mapper = new ObjectMapper();
+  	    String json = mapper.writeValueAsString(report); 
+      	return json;
+    }
     
-    
-    
+    private String createJson(List<Report> reports) throws JsonProcessingException {
+   	 ObjectMapper mapper = new ObjectMapper();
+ 	    String json = mapper.writeValueAsString(reports); 
+     	return json;
+   }
     
     /**
      * This function create new daily report
