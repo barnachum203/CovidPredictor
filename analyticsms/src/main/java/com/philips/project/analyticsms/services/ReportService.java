@@ -72,10 +72,11 @@ public class ReportService {
         }
         
     	newReport.setPatients(numberOfPCRs);
-    	newReport.setDate(date);
-        newReport.setPositiveRatio(positives/(numberOfPCRs-positives));
-        newReport.setPositivePCR(positives);
-        
+    	newReport.setDate(date);    			
+    	if(numberOfPCRs-positives != 0) {
+            newReport.setPositiveRatio((double)positives/(numberOfPCRs-positives));
+    	}
+        newReport.setPositivePCR(positives);        
         System.out.println(newReport);
         reportRepository.save(newReport);
     
