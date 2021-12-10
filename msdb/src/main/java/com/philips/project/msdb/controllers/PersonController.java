@@ -9,7 +9,9 @@ import com.philips.project.msdb.services.PersonService;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 
 @RestController
@@ -82,14 +84,14 @@ public class PersonController {
 	 */
 	@PostMapping("update/db/{date}")
 	public ResponseEntity<?> updateDBFromAPIByDate(@PathVariable String date) {
-		int result = 0;
+		List<Person> result = new ArrayList<>();
 
 		if (!date.isEmpty()) {
 			result = this.personService.fetchAPIData(date);
 		}
 
-		if (result == 1) {
-			return new ResponseEntity<String>("Updated results fo date: " + date, HttpStatus.OK);
+		if (result.size()>0) {
+			return new ResponseEntity<String>("Updated results for date: " + date, HttpStatus.OK);
 		} else {
 			return new ResponseEntity<String>("Wrong date format", HttpStatus.NOT_ACCEPTABLE);
 		}

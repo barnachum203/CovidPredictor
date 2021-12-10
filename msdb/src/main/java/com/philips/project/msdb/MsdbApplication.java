@@ -17,5 +17,4 @@ public class MsdbApplication {
 	{
 		return new RestTemplate();
 	}
-
 }

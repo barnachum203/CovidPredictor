@@ -29,4 +29,11 @@ public class HospitalController {
         int result = hospitalService.calcNumOfBeds(option);
         return new ResponseEntity<Integer>(result,HttpStatus.OK);
     }
+    
+    @GetMapping("send")
+    public ResponseEntity<Integer> sendWarningReports(){
+    	int result = hospitalService.sendWarningReports();
+        return new ResponseEntity<Integer>(result,HttpStatus.OK);
+    }
+    
 }

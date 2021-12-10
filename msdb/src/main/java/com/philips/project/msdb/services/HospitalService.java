@@ -1,30 +1,88 @@
 package com.philips.project.msdb.services;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.github.javafaker.Faker;
 import com.philips.project.msdb.beans.AreaEnum;
 import com.philips.project.msdb.beans.Hospital;
 import com.philips.project.msdb.repository.HospitalRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
+import com.philips.project.msdb.repository.PersonRepository;
 
 @Service
 public class HospitalService {
     @Autowired
     HospitalRepository hospitalRepository;
+	@Autowired
+	private PersonRepository personRepo;
 
     public void addHospital(Hospital hospital) throws Exception {
-        Optional<Hospital> existing = this.hospitalRepository.findById(hospital.getId());
-        if (!existing.isPresent()) {
+        Hospital existing = this.hospitalRepository.findById(hospital.getId());
+        if (existing!=null) {
             throw new Exception("Hospital with id " + hospital.getId() + " already exists");
         }
         this.hospitalRepository.save(hospital);
     }
 
+    public void updateNumber_Of_Beds(int id, int number_Of_Beds) throws Exception {
+		if (number_Of_Beds < 0) {
+			throw new Exception("Error number_Of_Beds");
+		}
+		int res = this.hospitalRepository.updateNumber_Of_Beds(id, number_Of_Beds);
+		if (res == 0) {
+			throw new Exception("Hospital was not found");
+		}
+	}
+
+	public void removeHospital(int hospitalId) {
+		this.hospitalRepository.deleteById(hospitalId);
+	}
+
+	public Iterable<Hospital> getAllHospitals() {
+		return this.hospitalRepository.findAll();
+	}
+
+	public int sendWarningReports() {
+		int [] NumOfBeds = new int[3];  // NumOfBeds in North , South , Center
+		int [] postiveRes = new int [3];  // postiveRes in North , South , Center
+		int i=0,cntHospital=0;
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+		LocalDateTime now = LocalDateTime.now();
+		
+		for(AreaEnum areaEnum:AreaEnum.values())
+		{
+			NumOfBeds[i] = calcNumOfBeds(areaEnum.name());
+			// get postive person number in area in date 
+			System.out.println(dtf.format(now));
+			postiveRes[i] = personRepo.getPostiveOfCorona(areaEnum.ordinal(),dtf.format(now),true); 
+			System.out.println("postiveRes  "+postiveRes[i]);
+			if(postiveRes[i] > NumOfBeds[i])
+			{
+				Iterable<Hospital> hospitals = getAllHospitals();
+				for (Hospital hospital : hospitals) {
+					String email = hospital.getContactEmail();
+					sendEmail(email);
+					cntHospital++;
+				}
+				i++;
+			}
+		}
+		return cntHospital;
+	}
+	
+	public void sendEmail(String email)
+	{
+		
+		
+	}
+    
+    
     public void setRandomData() {
         List<Hospital> hospitals = new ArrayList<>();
         for (int i = 0; i < 150; i++) {
@@ -57,7 +115,6 @@ public class HospitalService {
         switch (option) {
             case "north":
                 for (Hospital h : hospitals) {
-                    System.out.println("north");
                     if (h.getArea() == AreaEnum.North) {
                         result += h.getNumOfBeds();
                     }
@@ -65,8 +122,6 @@ public class HospitalService {
                 break;
             case "south":
                 for (Hospital h : hospitals) {
-                    System.out.println("South");
-
                     if (h.getArea() == AreaEnum.South) {
                         result += h.getNumOfBeds();
                     }
@@ -74,8 +129,6 @@ public class HospitalService {
                 break;
             case "central":
                 for (Hospital h : hospitals) {
-                    System.out.println("Central");
-
                     if (h.getArea() == AreaEnum.Central) {
                         result += h.getNumOfBeds();
                     }
@@ -83,8 +136,6 @@ public class HospitalService {
                 break;
             default:
                 for (Hospital h : hospitals) {
-                    System.out.println("default");
-
                     result += h.getNumOfBeds();
                 }
                 break;
