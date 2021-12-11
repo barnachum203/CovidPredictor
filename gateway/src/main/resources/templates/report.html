@@ -1,10 +1,50 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="windows-1255">
-<title>Insert title here</title>
+
+    <meta charset="ISO-8859-1">
+    <title>List Reports</title>
+    <link rel="stylesheet" type="text/css" href="/webjars/bootstrap/css/bootstrap.min.css" />
+    <script type="text/javascript" src="/webjars/jquery/jquery.min.js"></script>
+    <script type="text/javascript" src="/webjars/bootstrap/js/bootstrap.min.js"></script>
 </head>
 <body>
+<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+
+<div class="container text-center">
+    <div>
+        <form th:action="@{/logout}" method="post">
+            <p>
+                Welcome <b>[[${#request.userPrincipal.principal.fullName}]]</b>
+            </p>
+            <input type="submit" value="Sign Out" />
+        </form>
+    </div>
+    <div>
+        <h1>List of Reports</h1>
+    </div>
+
+    <div>
+        <table class="table table-striped table-bordered">
+            <thead class="thead-dark">
+            <tr>
+                <th>report ID</th>
+                <th>Date</th>
+                <th>Positive PCR</th>
+                <th>Accum</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="report: ${listReports}">
+                <td th:text="${report.id}">report ID</td>
+                <td th:text="${report.date}">date</td>
+                <td th:text="${report.positivePCR}">positivePCR</td>
+                <td th:text="${report.accumPositives}">accumPositives</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
 
 </body>
 </html>
