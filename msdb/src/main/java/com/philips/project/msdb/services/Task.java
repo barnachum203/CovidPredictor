@@ -32,18 +32,20 @@ public class Task implements CommandLineRunner {
     public void run(String... args) throws Exception {
 
         LocalDate date = LocalDate.now();
+        date = date.minusDays(14L);
 
         for (int i = 0; i <= 14; i++) {
-            List<Person> existing = (this.personRepository.findByResultDate(date.toString()));
+            List<Person> existing = this.personRepository.findByResultDate(date.toString());
             List<Person> personListAPI = new ArrayList<>();
             if (existing.size() == 0) {
                 System.out.println("FETCH DATA FOR DATE: " + date);
                 personListAPI = this.personService.fetchAPIData(date.toString());
                 this.sendDailyParams(personListAPI, date.toString());
             } else {
+                this.sendDailyParams(existing, date.toString());
                 System.out.println("Date already exist: " + date);
             }
-            date = date.minusDays(1L);
+            date = date.plusDays(1L);
         }
         System.out.println("Done!");
     }
