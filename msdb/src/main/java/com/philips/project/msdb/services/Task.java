@@ -54,7 +54,7 @@ public class Task implements CommandLineRunner {
             date = date.plusDays(1L);
         }
 
-        if(this.hospitalRepository.findAll().size() <= 10 ){
+        if(this.hospitalRepository.findAll().size() == 0 ){
             System.out.println(">>Set random hospitals");
             this.hospitalService.setRandomData();
         }
