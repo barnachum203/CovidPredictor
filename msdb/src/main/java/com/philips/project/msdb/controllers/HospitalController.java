@@ -1,7 +1,7 @@
 package com.philips.project.msdb.controllers;
 
-import com.philips.project.msdb.beans.AreaEnum;
-import com.philips.project.msdb.services.HospitalService;
+import javax.mail.MessagingException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.philips.project.msdb.services.HospitalService;
 
 @RestController
 @RequestMapping("hospital")
@@ -35,5 +37,17 @@ public class HospitalController {
     	int result = hospitalService.sendWarningReports();
         return new ResponseEntity<Integer>(result,HttpStatus.OK);
     }
+   
+    
+    @GetMapping("sendEmail")
+    public ResponseEntity<Integer> sendEmail(){
+    	try {
+			hospitalService.sendEmail("mahde19950@gmail.com",10,9,"North");
+		} catch (MessagingException e) {
+			e.printStackTrace();
+		}
+        return new ResponseEntity<Integer>(1,HttpStatus.OK);
+    }
+    
     
 }

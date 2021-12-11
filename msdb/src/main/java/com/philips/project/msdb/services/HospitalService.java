@@ -6,7 +6,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import com.github.javafaker.Faker;
@@ -21,6 +27,9 @@ public class HospitalService {
     HospitalRepository hospitalRepository;
 	@Autowired
 	private PersonRepository personRepo;
+	@Autowired
+    private JavaMailSender javaMailSender;
+	int [] NumOfBeds = new int[3];  // NumOfBeds in North , South , Center
 
     public void addHospital(Hospital hospital) throws Exception {
         Hospital existing = this.hospitalRepository.findById(hospital.getId());
@@ -48,38 +57,59 @@ public class HospitalService {
 		return this.hospitalRepository.findAll();
 	}
 
-	public int sendWarningReports() {
-		int [] NumOfBeds = new int[3];  // NumOfBeds in North , South , Center
+
+	public int sendWarningReports() {	
 		int [] postiveRes = new int [3];  // postiveRes in North , South , Center
 		int i=0,cntHospital=0;
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd");
-		LocalDateTime now = LocalDateTime.now();
-		
+		LocalDateTime now = LocalDateTime.now();  
 		for(AreaEnum areaEnum:AreaEnum.values())
 		{
 			NumOfBeds[i] = calcNumOfBeds(areaEnum.name());
+			if(NumOfBeds[i] == 0)
+				NumOfBeds[i] = calcNumOfBeds(areaEnum.name());
 			// get postive person number in area in date 
 			System.out.println(dtf.format(now));
 			postiveRes[i] = personRepo.getPostiveOfCorona(areaEnum.ordinal(),dtf.format(now),true); 
 			System.out.println("postiveRes  "+postiveRes[i]);
 			if(postiveRes[i] > NumOfBeds[i])
+			System.out.println("postiveRes  "+postiveRes[i] + "  NumOfBeds " + NumOfBeds[i]);
+			if(postiveRes[i] > NumOfBeds[i] && NumOfBeds[i]!=0)
 			{
 				Iterable<Hospital> hospitals = getAllHospitals();
 				for (Hospital hospital : hospitals) {
 					String email = hospital.getContactEmail();
-					sendEmail(email);
+					try {
+						sendEmail(email , postiveRes[i] , NumOfBeds[i] , areaEnum.name());
+					} catch (MessagingException e) {
+						e.printStackTrace();
+					}
 					cntHospital++;
 				}
-				i++;
 			}
+			i++;
 		}
 		return cntHospital;
 	}
 	
-	public void sendEmail(String email)
+	public void sendEmail(String toemail,int postiveRes , int NumOfBeds , String areaName) throws MessagingException
 	{
+		MimeMessage msg = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(msg, true);
 		
 		
+        helper.setTo(toemail);
+
+        helper.setSubject("Warning from the number of people sick with corona COVID-19");
+
+        helper.setText("<h1>Warning from the number of people sick with corona COVID-19 in area : "+areaName+" </h1></br>"
+        		+ "<h2>Number of people who received a positive answer in the test : "+postiveRes+"</br></h2>"+
+        		"<h2>The number of beds in hospitals in "+areaName+" : "+NumOfBeds+"</h2>", true);
+
+        helper.addAttachment("covid-19.jpg", new ClassPathResource("covid-19.jpg"));
+
+        javaMailSender.send(msg);		
+        System.out.println("Send mail Done");
 	}
     
     
