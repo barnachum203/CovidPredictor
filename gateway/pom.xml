@@ -71,9 +71,7 @@
 		    <groupId>org.webjars</groupId>
 		    <artifactId>webjars-locator-core</artifactId>
 		</dependency>
-
-	
-																<!--  until here -->
+											<!--  until here -->
 	</dependencies>
 
 	<build>
