@@ -1,5 +1,6 @@
 package com.philips.project.msdb.services;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -30,7 +31,9 @@ public class HospitalService {
 	@Autowired
     private JavaMailSender javaMailSender;
 	int [] NumOfBeds = new int[3];  // NumOfBeds in North , South , Center
-
+	int cntHospital=0;
+	String dateToday="";
+	
     public void addHospital(Hospital hospital) throws Exception {
         Hospital existing = this.hospitalRepository.findById(hospital.getId());
         if (existing!=null) {
@@ -58,11 +61,12 @@ public class HospitalService {
 	}
 
 
-	public int sendWarningReports() {	
+	public synchronized int sendWarningReports() {	
 		int [] postiveRes = new int [3];  // postiveRes in North , South , Center
-		int i=0,cntHospital=0;
+		int i=0;
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-		LocalDateTime now = LocalDateTime.now();
+		LocalDate now = LocalDate.now();
+		now = now.minusDays(14L);
 		for(AreaEnum areaEnum:AreaEnum.values())
 		{
 			if(NumOfBeds[i] == 0)
@@ -71,20 +75,31 @@ public class HospitalService {
 			System.out.println(dtf.format(now));
 			postiveRes[i] = personRepo.getPostiveOfCorona(areaEnum.ordinal(),dtf.format(now),true); //TODO:get positive by Area's from analytics
 			System.out.println("postiveRes  "+postiveRes[i]);
-			if(postiveRes[i] > NumOfBeds[i])
 			System.out.println("postiveRes  "+postiveRes[i] + "  NumOfBeds " + NumOfBeds[i]);
-			if(postiveRes[i] > NumOfBeds[i] && NumOfBeds[i]!=0)
+			
+			if(cntHospital > 0 && (dateToday.equals(dtf.format(now))==false))
+			{
+				cntHospital=0;
+			}
+			if(postiveRes[i] > NumOfBeds[i] && NumOfBeds[i]!=0 && cntHospital == 0)
 			{
 				Iterable<Hospital> hospitals = getAllHospitals();
-				for (Hospital hospital : hospitals) {
-					String email = hospital.getContactEmail();
-					try {
-						sendEmail(email , postiveRes[i] , NumOfBeds[i] , areaEnum.name());
-					} catch (MessagingException e) {
-						e.printStackTrace();
+					for (Hospital hospital : hospitals) {
+						if(hospital.getArea().ordinal() == areaEnum.ordinal())
+						{
+							String email = hospital.getContactEmail();
+						try {
+							sendEmail(email , postiveRes[i] , NumOfBeds[i] , areaEnum.name());
+						} catch (MessagingException e) {
+							e.printStackTrace();
+						}
+						cntHospital++;
 					}
-					cntHospital++;
 				}
+			}
+			if(cntHospital > 0)
+			{
+				dateToday = dtf.format(now);
 			}
 			i++;
 		}
@@ -137,9 +152,6 @@ public class HospitalService {
         List<Hospital> hospitals = hospitalRepository.findAll();
 
         option = option.toLowerCase(Locale.ROOT);
-        for (Hospital h : hospitals) {
-            result += h.getNumOfBeds();
-        }
 
         switch (option) {
             case "north":
