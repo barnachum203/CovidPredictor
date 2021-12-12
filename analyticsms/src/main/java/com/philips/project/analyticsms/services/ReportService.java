@@ -76,21 +76,43 @@ public class ReportService {
     	if(numberOfPCRs-positives != 0) {
             newReport.setPositiveRatio((double)positives/(numberOfPCRs-positives));
     	}
-    	newReport.setCenterCount(newReport.getCenterCount() + central);
-    	newReport.setNorthCount(newReport.getNorthCount() + north);
-    	newReport.setSouthCount(newReport.getSouthCount() + south);
+    	newReport.setCenterCount( central);
+    	newReport.setNorthCount( north);
+    	newReport.setSouthCount( south);
 
         newReport.setPositivePCR(positives);        
         System.out.println(newReport);
         reportRepository.save(newReport);
     
-        newReport.setAccumPositives(calculateDailyReport(date).getAccumPositives());
+        newReport.setAccumPositives(calculateHelper(date).getAccumPositives());
         System.out.println(newReport.getAccumPositives());
+        reportRepository.save(newReport);
+
+    }
+    public  Report calculateDailyReport(String date) {
+	    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+	    LocalDate oneDayAgo = LocalDate.parse(date,formatter).minusDays(1);
+	    LocalDate twoWeeksAgo = LocalDate.parse(date,formatter).minusDays(15);
+	    Report yesterdayDate =  this.reportRepository.findByDate(oneDayAgo.toString());
+	   
+	    LocalDate runOnDayes =twoWeeksAgo;
+	   
+	    Report runOnDayesReport = this.reportRepository.findByDate(runOnDayes.toString());
+	    
+	    while( yesterdayDate   == null && runOnDayesReport != null) {
+	    	runOnDayes = runOnDayes.plusDays(1);
+		    runOnDayesReport =  this.reportRepository.findByDate(runOnDayes.toString());
+	    }
+	    
+	    while(yesterdayDate   == null ) {
+	    	calculateHelper(runOnDayes.toString());
+		    yesterdayDate =  this.reportRepository.findByDate(oneDayAgo.toString());
+		    runOnDayes = runOnDayes.plusDays(1);
+	    }
+	    return calculateHelper(date);
     }
 
-    
-
-    public  Report calculateDailyReport(String date) {    //return prediction of positive patient
+    private  Report calculateHelper(String date) {    //return prediction of positive patient
     	
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         LocalDate oneWeekAgo = LocalDate.parse(date,formatter).minusDays(7);
@@ -106,38 +128,104 @@ public class ReportService {
         Report currDateReport =  this.reportRepository.findByDate(date);
         Report yesterdayDate =  this.reportRepository.findByDate(oneDayAgo.toString());
         Report day7Report = this.reportRepository.findByDate(oneWeekAgo.toString());
-        Report day14Report = reportRepository.findByDate(twoWeeksAgo.toString());
+        Report day14Report = reportRepository.findByDate(twoWeeksAgo.toString());      
+        
 
+        if(currDateReport  == null) {
+        	currDateReport = new Report();
+        	currDateReport.setDate(date);
+        }
+        else if (currDateReport != null && currDateReport.getAccumPositives()>0) {
+        	return currDateReport;
+        }
+        
+        
         int accumYesterday =   yesterdayDate   == null?    0:yesterdayDate.getAccumPositives();      
 
         int todayPositive  =   currDateReport  == null?    0:currDateReport.getPositivePCR();
         int sevenAgo       =   day7Report      == null?	 0:day7Report.getPositivePCR();
         int fourTeenAgo    =   day14Report     == null?    0:day14Report.getPositivePCR();
 
-        double less80Percent = 0.8*sevenAgo;
-        double less20Percent = fourTeenAgo*0.2;
+        int less80Percent = (int)(0.8*sevenAgo);
+        int less20Percent = (int) (fourTeenAgo*0.2);
         
-        
-        int less80PercentFromArea = new Random().nextInt(3);
-        int less20PercentFromArea = new Random().nextInt(3);
-        
-        reducePercentageFromArea(less80PercentFromArea , less80Percent , currDateReport  );
-        reducePercentageFromArea(less20PercentFromArea , less20Percent , currDateReport  );
-
+       
         
         int sum =(int) (todayPositive + accumYesterday - less80Percent  - less20Percent)    ;
+     
+        int[] arr = {0,0,1,1,2,2};   
 
-        if(currDateReport  == null) {
-        	currDateReport = new Report();
-        	currDateReport.setDate(date);
-        }        
-    	currDateReport.setAccumPositives(sum);
+        int accumNorthYesterday =   yesterdayDate   == null?    0:yesterdayDate.getNorthCount();      
+        int accumSouthYesterday =   yesterdayDate   == null?    0:yesterdayDate.getSouthCount();      
+        int accumCenterYesterday =   yesterdayDate   == null?    0:yesterdayDate.getCenterCount();      
 
-        System.out.println(currDateReport);
+        currDateReport.setCenterCount( currDateReport.getCenterCount() + accumCenterYesterday );
+        currDateReport.setNorthCount(  currDateReport.getNorthCount() + accumNorthYesterday);
+    	currDateReport.setSouthCount( currDateReport.getSouthCount() + accumSouthYesterday);
+        int randomArea = new Random().nextInt(arr.length);
+      
+        int toReduce =  less80Percent  + less20Percent;
+        if( toReduce > 0)
+        	subscribe(currDateReport, toReduce , arr[randomArea]);  
+    	
+        
+        currDateReport.setAccumPositives(sum);
+
+//        System.out.println(currDateReport);
         reportRepository.save(currDateReport);
         return currDateReport;
     }
 
+    private void subscribe(Report currDateReport ,int toReduce ,int randomArea) {
+
+     	int negativeNum;
+    	switch(randomArea) {
+    	case 0:
+        	if( currDateReport.getNorthCount()  < toReduce ) {
+        		currDateReport.setNorthCount(0);
+        		negativeNum = (currDateReport.getNorthCount() - toReduce)*-1;
+        		if(currDateReport.getCenterCount() > negativeNum) {
+        			subscribe(currDateReport, negativeNum , 2);
+        		}
+        		else {
+        			subscribe(currDateReport, negativeNum, 1);
+        		}
+        	} 	
+        	else
+        		currDateReport.setNorthCount(currDateReport.getNorthCount() - toReduce);
+    		break;
+    	case 1:    		
+    		if( currDateReport.getSouthCount()  < toReduce ) {
+        		currDateReport.setSouthCount(0);
+        		negativeNum = (currDateReport.getSouthCount() - toReduce)*-1;
+        		if(currDateReport.getNorthCount() > negativeNum) {
+        			subscribe(currDateReport, negativeNum , 0);
+        		}
+        		else {
+        			subscribe(currDateReport, negativeNum, 2);
+        		}
+        	} 	
+        	else
+        		currDateReport.setSouthCount(currDateReport.getSouthCount() - toReduce);
+    		break;
+    	case 2:    
+    		if( currDateReport.getCenterCount()  < toReduce ) {
+        		currDateReport.setCenterCount(0);
+        		negativeNum = (currDateReport.getCenterCount() - toReduce)*-1;
+        		if(currDateReport.getSouthCount() > negativeNum) {
+        			subscribe(currDateReport, negativeNum , 1);
+        		}
+        		else {
+        			subscribe(currDateReport, negativeNum, 0);
+        		}
+        	} 	
+        	else
+        		currDateReport.setCenterCount(currDateReport.getCenterCount() - toReduce);
+    		break;
+    	}
+    }
+
+    
     private String createJson(Report report) throws JsonProcessingException {
     	 ObjectMapper mapper = new ObjectMapper();
   	    String json = mapper.writeValueAsString(report); 
@@ -151,19 +239,7 @@ public class ReportService {
    }
     
     
-    private void reducePercentageFromArea(int area,double areaToReduce, Report currDateReport ) {
-    	switch(area) {
-    	case 0:
-    		currDateReport.setNorthCount((int) (currDateReport.getNorthCount()- areaToReduce));
-    		break;
-    	case 1:
-    		currDateReport.setSouthCount((int) (currDateReport.getSouthCount()- areaToReduce));
-    		break;
-    	case 2:
-    		currDateReport.setCenterCount((int) (currDateReport.getCenterCount()- areaToReduce));
-    		break;
-    	}
-    }
+ 
     /**
      * This function create new daily report
      * @param date
