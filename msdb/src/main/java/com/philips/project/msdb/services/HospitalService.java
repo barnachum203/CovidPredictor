@@ -30,7 +30,6 @@ public class HospitalService {
 	private PersonRepository personRepo;
 	@Autowired
     private JavaMailSender javaMailSender;
-	int [] NumOfBeds = new int[3];  // NumOfBeds in North , South , Center
 	int cntHospital=0;
 	String dateToday="";
 	
@@ -62,6 +61,7 @@ public class HospitalService {
 
 
 	public synchronized int sendWarningReports() {	
+		int [] NumOfBeds = new int[3];  // NumOfBeds in North , South , Center
 		int [] postiveRes = new int [3];  // postiveRes in North , South , Center
 		int i=0;
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
