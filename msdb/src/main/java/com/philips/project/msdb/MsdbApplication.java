@@ -21,11 +21,13 @@ public class MsdbApplication {
 		Thread thread1 = new Thread(new Runnable() {
             @Override
             public void run() {
+				while(true){
             	hospitalService.sendWarningReports();
                 try {
 					Thread.sleep(500000);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
+				}
 				}
             }
 		 }, "Thread 1");
