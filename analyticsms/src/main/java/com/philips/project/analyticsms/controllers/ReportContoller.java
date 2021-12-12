@@ -4,6 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.philips.project.analyticsms.beans.Report;
 import com.philips.project.analyticsms.services.ReportService;
+
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,13 +50,19 @@ public class ReportContoller {
     
 
 
-    @PostMapping("daily/{date}/{positives}/{numberOfPCRs}")
-    public void autoRecieveData(@PathVariable String date,@PathVariable int positives,@PathVariable int numberOfPCRs){
+    @PostMapping("daily")
+    public void autoRecieveData(@RequestBody String data) throws ParseException{
+    	JSONObject j = (JSONObject) JSONValue.parse(data);
+        System.out.println("Date: " );
+        String date = (String) j.get("date");
+        long positives = (long) j.get("positives");
+        long south = (long) j.get("south");
+        long numberOfPCRs = (long) j.get("numberOfPCRs");
+        long north = (long) j.get("north");
+        long central = (long) j.get("central");
 
-        System.out.println("Date: " + date);
-        System.out.println("positives:  " + positives);
-        System.out.println("numberOfPCRs: " + numberOfPCRs);
-        reportService.autoRecieveData(date, positives, numberOfPCRs);
+        System.out.println(numberOfPCRs);
+       reportService.autoRecieveData((String)j.get("date"),(int)positives,(int)numberOfPCRs,(int)south,(int)north,(int)central);
     }
 
     @GetMapping("report/{date}")

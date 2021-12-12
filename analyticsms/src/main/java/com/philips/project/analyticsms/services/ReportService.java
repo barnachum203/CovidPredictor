@@ -14,6 +14,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 @Service
 public class ReportService {
@@ -64,18 +65,21 @@ public class ReportService {
     }
     
 
-    public void autoRecieveData(String date, int positives, int numberOfPCRs) {  // when db inserted to msdb, this function will be called
+    public void autoRecieveData(String date, int positives, int numberOfPCRs,int central, int north,int south ) {  // when db inserted to msdb, this function will be called
         Report newReport =  this.reportRepository.findByDate(date);
         System.out.println("auto called");
     	if (newReport == null) {
         	newReport = new Report();
         }
-        
     	newReport.setPatients(numberOfPCRs);
     	newReport.setDate(date);    			
     	if(numberOfPCRs-positives != 0) {
             newReport.setPositiveRatio((double)positives/(numberOfPCRs-positives));
     	}
+    	newReport.setCenterCount(newReport.getCenterCount() + central);
+    	newReport.setNorthCount(newReport.getNorthCount() + north);
+    	newReport.setSouthCount(newReport.getSouthCount() + south);
+
         newReport.setPositivePCR(positives);        
         System.out.println(newReport);
         reportRepository.save(newReport);
@@ -110,8 +114,18 @@ public class ReportService {
         int sevenAgo       =   day7Report      == null?	 0:day7Report.getPositivePCR();
         int fourTeenAgo    =   day14Report     == null?    0:day14Report.getPositivePCR();
 
- 
-        int sum =(int) (todayPositive + accumYesterday - 0.8*sevenAgo  - fourTeenAgo*0.2)    ;
+        double less80Percent = 0.8*sevenAgo;
+        double less20Percent = fourTeenAgo*0.2;
+        
+        
+        int less80PercentFromArea = new Random().nextInt(3);
+        int less20PercentFromArea = new Random().nextInt(3);
+        
+        reducePercentageFromArea(less80PercentFromArea , less80Percent , currDateReport  );
+        reducePercentageFromArea(less20PercentFromArea , less20Percent , currDateReport  );
+
+        
+        int sum =(int) (todayPositive + accumYesterday - less80Percent  - less20Percent)    ;
 
         if(currDateReport  == null) {
         	currDateReport = new Report();
@@ -136,6 +150,20 @@ public class ReportService {
      	return json;
    }
     
+    
+    private void reducePercentageFromArea(int area,double areaToReduce, Report currDateReport ) {
+    	switch(area) {
+    	case 0:
+    		currDateReport.setNorthCount((int) (currDateReport.getNorthCount()- areaToReduce));
+    		break;
+    	case 1:
+    		currDateReport.setSouthCount((int) (currDateReport.getSouthCount()- areaToReduce));
+    		break;
+    	case 2:
+    		currDateReport.setCenterCount((int) (currDateReport.getCenterCount()- areaToReduce));
+    		break;
+    	}
+    }
     /**
      * This function create new daily report
      * @param date

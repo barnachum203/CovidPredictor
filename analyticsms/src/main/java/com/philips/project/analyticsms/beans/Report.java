@@ -16,6 +16,9 @@ public class Report {
     private int patients; // number of PCRs
     private int positivePCR; // positive PCRs
     private int accumPositives;
+    private int northCount;
+    private int southCount;
+    private int CenterCount;
 
     public int calculatePatients(){
         //TODO: implement calculator
