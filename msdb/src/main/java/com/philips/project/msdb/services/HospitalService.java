@@ -61,16 +61,15 @@ public class HospitalService {
 	public int sendWarningReports() {	
 		int [] postiveRes = new int [3];  // postiveRes in North , South , Center
 		int i=0,cntHospital=0;
-		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd");
-		LocalDateTime now = LocalDateTime.now();  
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		LocalDateTime now = LocalDateTime.now();
 		for(AreaEnum areaEnum:AreaEnum.values())
 		{
-			NumOfBeds[i] = calcNumOfBeds(areaEnum.name());
 			if(NumOfBeds[i] == 0)
 				NumOfBeds[i] = calcNumOfBeds(areaEnum.name());
 			// get postive person number in area in date 
 			System.out.println(dtf.format(now));
-			postiveRes[i] = personRepo.getPostiveOfCorona(areaEnum.ordinal(),dtf.format(now),true); 
+			postiveRes[i] = personRepo.getPostiveOfCorona(areaEnum.ordinal(),dtf.format(now),true); //TODO:get positive by Area's from analytics
 			System.out.println("postiveRes  "+postiveRes[i]);
 			if(postiveRes[i] > NumOfBeds[i])
 			System.out.println("postiveRes  "+postiveRes[i] + "  NumOfBeds " + NumOfBeds[i]);
