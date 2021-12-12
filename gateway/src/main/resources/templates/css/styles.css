@@ -11511,3 +11511,7 @@ header.masthead h1, header.masthead .h1 {
   padding: 16px 32px;
 }
 
+canvas{
+    margin: 0 auto;
+    }
+
