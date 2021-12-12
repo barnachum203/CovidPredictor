@@ -1,6 +1,7 @@
 package com.philips.project.msdb.services;
 
 import com.philips.project.msdb.beans.Person;
+import com.philips.project.msdb.repository.HospitalRepository;
 import com.philips.project.msdb.repository.PersonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -21,6 +22,10 @@ public class Task implements CommandLineRunner {
     PersonService personService;
     @Autowired
     private RestTemplate client;
+    @Autowired
+    HospitalRepository hospitalRepository;
+    @Autowired
+    HospitalService hospitalService;
     private static String report_URL = "http://localhost:8081/report/";
 
     public Task() {
@@ -32,20 +37,26 @@ public class Task implements CommandLineRunner {
     public void run(String... args) throws Exception {
 
         LocalDate date = LocalDate.now();
+        date = date.minusDays(6L); // DEV: API get update once a week so ignore lsat 6 days.
         date = date.minusDays(14L);
 
         for (int i = 0; i <= 14; i++) {
             List<Person> existing = this.personRepository.findByResultDate(date.toString());
             List<Person> personListAPI = new ArrayList<>();
             if (existing.size() == 0) {
-                System.out.println("FETCH DATA FOR DATE: " + date);
+                System.out.println(">>FETCH DATA FOR DATE: " + date);
                 personListAPI = this.personService.fetchAPIData(date.toString());
                 this.sendDailyParams(personListAPI, date.toString());
             } else {
                 this.sendDailyParams(existing, date.toString());
-                System.out.println("Date already exist: " + date);
+                System.out.println(">>Date already exist in DB: " + date);
             }
             date = date.plusDays(1L);
+        }
+
+        if(this.hospitalRepository.findAll().size() == 0 ){
+            System.out.println(">>Set random hospitals");
+            this.hospitalService.setRandomData();
         }
         System.out.println("Done!");
     }
