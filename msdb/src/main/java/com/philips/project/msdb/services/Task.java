@@ -1,11 +1,18 @@
 package com.philips.project.msdb.services;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.util.JSONPObject;
+import com.philips.project.msdb.beans.AreaEnum;
+import com.philips.project.msdb.beans.Hospital;
 import com.philips.project.msdb.beans.Person;
 import com.philips.project.msdb.repository.HospitalRepository;
 import com.philips.project.msdb.repository.PersonRepository;
+import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -37,7 +44,7 @@ public class Task implements CommandLineRunner {
     public void run(String... args) throws Exception {
 
         LocalDate date = LocalDate.now();
-        date = date.minusDays(6L); // DEV: API get update once a week so ignore lsat 6 days.
+//        date = date.minusDays(6L); // DEV: API get update once a week so ignore lsat 6 days.
         date = date.minusDays(14L);
 
         for (int i = 0; i <= 14; i++) {
@@ -61,23 +68,44 @@ public class Task implements CommandLineRunner {
         System.out.println("Done!");
     }
 
-    private void sendDailyParams( List<Person> personList, String date){
+    private void sendDailyParams( List<Person> personList, String date) {
 
         int positives = 0;
         int numberOfPCRs = personList.size();
+        int north = 0, central = 0, south = 0;
 
         // Count the number of positive PCRs
         for (Person p : personList) {
             if (p.isBool_of_corona()) {
                 positives++;
+                switch (p.getArea().name().toLowerCase(Locale.ROOT)) {
+                    case "north":
+                        north++;
+                        break;
+                    case "south":
+                        south++;
+                        break;
+                    case "central":
+                        central++;
+                        break;
+                }
             }
         }
 
-        String url = report_URL+"daily/"+date+"/"+positives+"/"+numberOfPCRs;
+        JSONObject jo = new JSONObject();
+        jo.put("date", date);
+        jo.put("positives", positives);
+        jo.put("numberOfPCRs", numberOfPCRs);
+        jo.put("north", north);
+        jo.put("south", south);
+        jo.put("central", central);
+
+
+        String url = report_URL + "daily";
 
         try {
-        this.client.postForEntity(url, HttpMethod.POST,String.class);
-        }catch (Exception e){
+            this.client.postForObject(url, jo, String.class);
+        } catch (Exception e) {
             System.out.println("Error posting to analytics" + e);
         }
 
