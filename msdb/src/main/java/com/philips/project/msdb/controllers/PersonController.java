@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.mail.MessagingException;
+
 
 @RestController
 @RequestMapping("api")
@@ -119,6 +121,19 @@ public class PersonController {
 		this.client.postForEntity(url,HttpMethod.POST,String.class,result);
 
 	}
+	
+	@GetMapping("get/postive")
+	public ResponseEntity<Integer> getPostive()
+	{
+		int postive = personService.getPostive();
+		return new ResponseEntity<Integer>(postive,HttpStatus.OK);
 
+	}
+	@GetMapping("get/negative")
+	public ResponseEntity<Integer> getNegative()
+	{
+		int negative = personService.getNegative();
+		return new ResponseEntity<Integer>(negative,HttpStatus.OK);
+	}
 }
 

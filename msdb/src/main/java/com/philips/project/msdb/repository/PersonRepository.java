@@ -21,7 +21,6 @@ public interface PersonRepository extends JpaRepository<Person, Integer>{
 //	public Person findByResultDate(String date);
 
 
-
 	@Transactional
 	@Modifying
 	@Query(value = "update person set result=:result where id=:id", nativeQuery=true)
@@ -42,4 +41,10 @@ public interface PersonRepository extends JpaRepository<Person, Integer>{
 
 	@Query(value = "select COUNT(result) from person where area=:area and date=:date and result=:boolresult", nativeQuery=true)
 	public int getPostiveOfCorona(int area,String date,boolean boolresult);
+	
+	@Query(value = "select COUNT(result) from person where result=:postive", nativeQuery=true)
+	public int getPostive(boolean postive);
+	
+	@Query(value = "select COUNT(result) from person where result=:negative", nativeQuery=true)
+	public int getnegative(boolean negative);
 }

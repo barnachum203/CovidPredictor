@@ -148,4 +148,13 @@ public class PersonService implements Validator {
 		person.setArea(AreaEnum.generateRandomArea());
 		return person;
 	}
+	
+	public int getPostive()
+	{
+		return personRepo.getPostive(true);
+	}
+	public int getNegative()
+	{
+		return personRepo.getnegative(false);
+	}
 }
