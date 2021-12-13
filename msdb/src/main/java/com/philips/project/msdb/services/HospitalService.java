@@ -73,7 +73,7 @@ public class HospitalService {
 				NumOfBeds[i] = calcNumOfBeds(areaEnum.name());
 			// get postive person number in area in date 
 			System.out.println(dtf.format(now));
-			postiveRes[i] = personRepo.getPostiveOfCorona(areaEnum.ordinal(),dtf.format(now),true); //TODO:get positive by Area's from analytics
+			postiveRes[i] = personRepo.getPostiveOfCorona(areaEnum.ordinal(),dtf.format(now),true);
 			System.out.println("postiveRes  "+postiveRes[i]);
 			System.out.println("postiveRes  "+postiveRes[i] + "  NumOfBeds " + NumOfBeds[i]);
 			
@@ -183,4 +183,9 @@ public class HospitalService {
         }
         return result;
     }
+
+	public int getNumber_Of_Beds()
+	{
+		return hospitalRepository.getNumber_Of_Beds();
+	}
 }

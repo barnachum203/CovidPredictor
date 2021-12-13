@@ -22,4 +22,7 @@ public interface HospitalRepository extends JpaRepository<Hospital, Integer> {
 	@Modifying
 	@Query(value = "update hospital set num_Of_Beds=:number_Of_Beds where id=:id", nativeQuery=true)
 	public int updateNumber_Of_Beds(int id,int number_Of_Beds);
+	
+	@Query(value = "select SUM(num_of_beds) from hospital", nativeQuery=true)
+	public int getNumber_Of_Beds();
 }

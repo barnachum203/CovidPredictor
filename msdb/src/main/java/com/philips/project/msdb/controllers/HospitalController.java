@@ -61,7 +61,12 @@ public class HospitalController {
 			return new ResponseEntity<Exception>(e,HttpStatus.UNPROCESSABLE_ENTITY);
 		}
 	}
-
     
+    @GetMapping("get/Number_Of_Beds")
+    public ResponseEntity<Integer> getNumber_Of_Beds()
+    {
+    	int negative = hospitalService.getNumber_Of_Beds();
+		return new ResponseEntity<Integer>(negative,HttpStatus.OK);
+    }
     
 }
