@@ -1,13 +1,15 @@
 package com.philips.project.gateway.controllers;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.JSONPObject;
-import com.philips.project.gateway.bean.Report;
-import com.philips.project.gateway.bean.ReportList;
+
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.ResponseEntity;
@@ -87,9 +89,23 @@ public class APIGateway {
 
     @GetMapping("/reports")
     public String listReports(Model model) {
-        ResponseEntity<Object[]> respones = this.client.getForEntity(report_URL, Object[].class);
-        Object[] listReports = respones.getBody();
+        ResponseEntity<JSONObject[]> respones = this.client.getForEntity(report_URL, JSONObject[].class);
+        List<String> date = new ArrayList<String>();
+        List<String> accu = new ArrayList<String>();
+
+        for(JSONObject obj : respones.getBody()) {
+            date.add(obj.get("date").toString());
+            accu.add(obj.get("accumPositives").toString());
+            System.out.println(obj.get("date").toString() + " " + obj.get("accumPositives").toString());
+
+        }
+        System.out.println(respones.toString());
+        JSONObject[] listReports = respones.getBody();
         model.addAttribute("listReports", listReports);
+        model.addAttribute("date", date);
+        model.addAttribute("accu", accu);
+
+
         return "report";
     }
 }
