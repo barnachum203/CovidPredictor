@@ -19,13 +19,19 @@ public class HospitalController {
     @Autowired
     private HospitalService hospitalService;
 
+    /**
+     * DEV: Used to fill the DB with random hospitals
+     */
     @GetMapping("/randomize")
     public void randomizeHospitals(){
         hospitalService.setRandomData();
     }
 
-
-    //option = north / south / central / all
+    /**
+     * Get the number of beds in by area
+     * @param option = north / south / central / all
+     * @return number of beds by area
+     */
     @GetMapping("/beds/{option}")
     public ResponseEntity<Integer> sendNumOfBeds(@PathVariable String option){
         int result = hospitalService.calcNumOfBeds(option);
