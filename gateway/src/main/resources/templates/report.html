@@ -5,12 +5,17 @@
     <meta charset="ISO-8859-1">
     <title>List Reports</title>
     <link rel="stylesheet" type="text/css" href="/webjars/bootstrap/css/bootstrap.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.6.2/dist/chart.min.js"></script>
+    
     <script type="text/javascript" src="/webjars/jquery/jquery.min.js"></script>
     <script type="text/javascript" src="/webjars/bootstrap/js/bootstrap.min.js"></script>
 </head>
 <body>
 <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
 
+
+
+ 
 <div class="container text-center">
     <div>
         <form th:action="@{/logout}" method="post">
@@ -20,6 +25,62 @@
             <input type="submit" value="Sign Out" />
         </form>
     </div>
+    
+    
+    
+    
+		<canvas style="margin: 0 auto;" id="myChart" width="400" height="400"></canvas>
+
+<script  th:inline="javascript">
+const ctx = document.getElementById('myChart').getContext('2d');
+const myChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: /*[[${date}]]*/ 'default',
+        datasets: [{
+            label: 'Future patients by date',
+            data: /*[[${accu}]]*/ 'default',
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 206, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(153, 102, 255, 0.2)',
+                'rgba(255, 159, 64, 0.2)'
+            ],
+            borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+    	responsive: false,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
+ 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div>
         <h1>List of Reports</h1>
     </div>
