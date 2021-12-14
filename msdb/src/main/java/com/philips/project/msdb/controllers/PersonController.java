@@ -7,10 +7,13 @@ import org.springframework.web.bind.annotation.*;
 import com.philips.project.msdb.beans.Person;
 import com.philips.project.msdb.services.PersonService;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import javax.mail.MessagingException;
 
 
 @RestController
@@ -23,21 +26,13 @@ public class PersonController {
 	private RestTemplate client;
 	private static String report_URL = "http://localhost:8081/report/";
 
-	/**
-	 * Send all patients data
-	 * @return
-	 */
-	@GetMapping("get/all")
+
+	@GetMapping("get/All")
 	public Iterable<Person> getAll()
 	{
 		return this.personService.getAllPersons();
 	}
 
-	/**
-	 * Add new patient to DB
-	 * @param person - patient data
-	 * @return add confirmation
-	 */
 	@PostMapping("add/person")
 	public ResponseEntity<?> addPerson(@RequestBody Person person)
 	{
@@ -50,10 +45,6 @@ public class PersonController {
 		}
 	}
 
-	/**
-	 * Delete patient by id
-	 * @param personId
-	 */
 	@DeleteMapping("remove/patient/{personId}")
 	public ResponseEntity<?> removePerson(@PathVariable int personId)
 	{
@@ -61,12 +52,6 @@ public class PersonController {
 		return new ResponseEntity<Void>(HttpStatus.OK);
 	}
 
-	/**
-	 * Update the result of PCR for patient by id
-	 * @param personId
-	 * @param result
-	 * @return success/not success
-	 */
 	@PutMapping("update/patient/result/{personId}/{result}")
 	public ResponseEntity<?> updatePersonResult(@PathVariable int personId,@PathVariable String result)
 	{
@@ -79,10 +64,24 @@ public class PersonController {
 		}
 	}
 
+
+	@PutMapping("update/patient/result/{personId}/{date}")
+	public ResponseEntity<?> updatePersonDate(@PathVariable int id,@PathVariable String date)
+	{
+		try {
+			personService.updatePersonDate(id, date);
+			return new ResponseEntity<Void>(HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<Exception>(e,HttpStatus.UNPROCESSABLE_ENTITY);
+		}
+	}
+
 	/**
 	 * Update db from MOH API by date.
 	 * this will not replace existing data
-	 * @param date - get data from specific date
+	 * //TODO: this func should replace existing data (?)
+	 * @param date
 	 * @return Response
 	 */
 	@PostMapping("update/db/{date}")
@@ -107,33 +106,29 @@ public class PersonController {
 	@GetMapping("get/db/daily/{date}")
 	public void sendDailyParams(@PathVariable String date){
 
-		HashMap<String, Integer> result = new HashMap<>();
-		int positives = result.get("positives");
-		int numberOfPCRs = result.get("numberOfPCRs");
 		System.out.println("Date: " + date );
 
+		HashMap<String, Integer> result ;
 		result = personService.sendDailyParams(date);
+
+
+		int positives = result.get("positives");
+		int numberOfPCRs = result.get("numberOfPCRs");
 		String url = report_URL+"daily/"+date+"/"+positives+"/"+numberOfPCRs;
 
+		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
+
 		this.client.postForEntity(url,HttpMethod.POST,String.class,result);
-	}
 
-	/**
-	 *
-	 * @return number of positive patients
-	 */
-	@GetMapping("get/positive")
-	public ResponseEntity<Integer> getPositive()
+	}
+	
+	@GetMapping("get/postive")
+	public ResponseEntity<Integer> getPostive()
 	{
-		int positive = personService.getPositive();
-		return new ResponseEntity<Integer>(positive,HttpStatus.OK);
+		int postive = personService.getPostive();
+		return new ResponseEntity<Integer>(postive,HttpStatus.OK);
 
 	}
-
-	/**
-	 *
-	 * @return number of negative patients
-	 */
 	@GetMapping("get/negative")
 	public ResponseEntity<Integer> getNegative()
 	{

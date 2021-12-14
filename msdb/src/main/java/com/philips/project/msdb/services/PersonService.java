@@ -44,27 +44,25 @@ public class PersonService implements Validator {
 		}
 	}
 
-	/**
-	 * Remove patient by id
-	 * @param productId
-	 */
+	public void updatePersonDate(int id, String date) throws Exception {
+		if (!this.validateDateFormat(date)) {
+			throw new Exception("Error date");
+		}
+		int res = this.personRepo.updatePersonDate(id, date);
+		if (res == 0) {
+			throw new Exception("Person was not found");
+		}
+	}
+
 	public void removePerson(int productId) {
 		this.personRepo.deleteById(productId);
 	}
 
-	/**
-	 * Get all patients from DB
-	 * @return list of patients
-	 */
 	public Iterable<Person> getAllPersons() {
 		return this.personRepo.findAll();
 	}
 
-	/**
-	 * This function goes to MOH api and get the data for a specific date
-	 * @param date format: yyyy-MM-dd
-	 * @return list of patients
-	 */
+	//date format: yyyy-MM-dd
 	public List<Person> fetchAPIData(String date) {
 
 		List<Person> personsList = new ArrayList<>();
@@ -90,6 +88,7 @@ public class PersonService implements Validator {
 				person.setBool_of_corona(false);
 
 			personsList.add(person);
+//			personRepo.save(person);
 		}
 		personRepo.saveAll(personsList);
 		return personsList;
@@ -97,6 +96,7 @@ public class PersonService implements Validator {
 
 	/**
 	 * Get a summary of data for a requested date
+	 *
 	 * @param date - requested date
 	 * @return positives, totalNumberOfPCRs
 	 */
@@ -144,18 +144,12 @@ public class PersonService implements Validator {
 	}
 
 
-	/**
-	 * DEV method for randomize data
-	 * SET RANDOM AREA FOR PATIENT
-	 * @param person
-	 * @return
-	 */
 	private Person randomizePersonData(Person person) {
 		person.setArea(AreaEnum.generateRandomArea());
 		return person;
 	}
 	
-	public int getPositive()
+	public int getPostive()
 	{
 		return personRepo.getPostive(true);
 	}
