@@ -123,32 +123,21 @@
         <div id="portfolio">
             <div class="container-fluid p-0">
                 <div class="row g-0">
-                    <div class="col-lg-4 col-sm-6">
-                                                        
-                                 
+                    <div class="col-lg-4 col-sm-6">                                                                                    
 						<div class="container-custom">
-						<a  class="image-custom" th:href="@{/reports}"><img class="image-custom" src="assets/img/portfolio/thumbnails/today.jpg" /></a>
-						  <div class="middle-custom">
-						    <div class="text">Click for prediction report</div>
-						  </div>
+								<a  class="image-custom" th:href="@{/reports}"><img class="image-custom" src="assets/img/portfolio/thumbnails/today.jpg" /></a>
+						  		<div class="middle-custom">
+						  			  <div class="text">Click for prediction report</div>
+						  		</div>
 						</div>
-						                    
-<form:form method="POST" action="/getAllOnDate" commandName="date">
-<table>
-    <td><form:label path="date">Date</form:label></td>
-    <td><form:input type="date" path="date"/></td>
-    <input type="submit" value="View all on date"/>
-</table>
-</form:form>
                     </div>
                     <div class="col-lg-4 col-sm-6">
-                        <a class="portfolio-box" href="assets/img/portfolio/fullsize/2.jpg" title="Project Name">
-                            <img class="img-fluid" src="assets/img/portfolio/thumbnails/2.jpg" alt="..." />
-                            <div class="portfolio-box-caption">
-                                <div class="project-category text-white-50">Category</div>
-                                <div class="project-name">Project Name</div>
-                            </div>
-                        </a>
+                        <div class="container-custom">
+								<a  class="image-custom" th:href="@{/area_reports}"><img class="image-custom" src="assets/img/portfolio/thumbnails/area.jpg" /></a>
+						  		<div class="middle-custom">
+						  			  <div class="text">Area prediction for tomorrow</div>
+						  		</div>
+						</div>
                     </div>
                     <div class="col-lg-4 col-sm-6">
                         <a class="portfolio-box" href="assets/img/portfolio/fullsize/3.jpg" title="Project Name">
