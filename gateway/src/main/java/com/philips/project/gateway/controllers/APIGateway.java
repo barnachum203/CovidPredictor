@@ -1,5 +1,7 @@
 package com.philips.project.gateway.controllers;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -24,6 +26,7 @@ import com.philips.project.gateway.service.CustomUserDetailsService;
 public class APIGateway {
     private static String updatedb_URL = "http://localhost:8082/person/updateResult";
     private static String report_URL = "http://localhost:8081/report/";
+
 
     @Autowired
     private RestTemplate client;
@@ -91,12 +94,11 @@ public class APIGateway {
         ResponseEntity<JSONObject[]> respones = this.client.getForEntity(report_URL, JSONObject[].class);
         List<String> date = new ArrayList<String>();
         List<String> accu = new ArrayList<String>();
-        List<String> area = new ArrayList<String>();
+//        List<String> area = new ArrayList<String>();
 
         for(JSONObject obj : respones.getBody()) {
             date.add(obj.get("date").toString());
             accu.add(obj.get("accumPositives").toString());
-          //  System.out.println(obj.get("date").toString() + " " + obj.get("accumPositives").toString());
 
         }
         System.out.println(respones.toString());
@@ -104,35 +106,24 @@ public class APIGateway {
         model.addAttribute("listReports", listReports);
         model.addAttribute("date", date);
         model.addAttribute("accu", accu);
-        model.addAttribute("area", accu);
 
         return "report";
     }
     
-    /*
-    @GetMapping("/threeWeeks")
-    public String threeWeekslistReports(Model model) {
-    	
-        ResponseEntity<JSONObject[]> respones = this.client.getForEntity(report_URL + "/predict", JSONObject[].class);
-        List<String> date = new ArrayList<String>();
-        List<String> accu = new ArrayList<String>();
-        List<String> area = new ArrayList<String>();
-
-        for(JSONObject obj : respones.getBody()) {
-            date.add(obj.get("date").toString());
-            accu.add(obj.get("accumPositives").toString());
-          //  System.out.println(obj.get("date").toString() + " " + obj.get("accumPositives").toString());
-
-        }
-        JSONObject[] listReports = respones.getBody();
-        model.addAttribute("listReports", listReports);
-        model.addAttribute("date", date);
-        model.addAttribute("accu", accu);
-        model.addAttribute("area", accu);
-
-        return "report";
+    @GetMapping("/area_reports")
+    public String specificDateAreaeport(Model model) {
+    	 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+         LocalDate today = LocalDate.parse(LocalDate.now().toString(),formatter);
+         
+        ResponseEntity<JSONObject> respone = this.client.getForEntity(report_URL+"report/"+today, JSONObject.class);
+        String date = new String();
+        JSONObject obj = respone.getBody();
+       
+        model.addAttribute("south", obj.get("southCount").toString());
+        model.addAttribute("north",obj.get("northCount").toString());
+        model.addAttribute("center", obj.get("centerCount").toString());   
+        return "area_report";
     }
-*/
     
     
 }
