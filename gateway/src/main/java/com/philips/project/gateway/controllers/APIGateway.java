@@ -1,17 +1,12 @@
 package com.philips.project.gateway.controllers;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.util.JSONPObject;
 
 import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -34,7 +29,7 @@ public class APIGateway {
     private RestTemplate client;
 
 
-    @GetMapping("/{date}")
+ /*   @GetMapping("/{date}")
     public String getReport(String date)
     {
         System.out.println(date);
@@ -42,7 +37,7 @@ public class APIGateway {
         ResponseEntity<String> result =  this.client.getForEntity(report_URL+"/report/"+date, String.class);
         System.out.println(result);
         return result.toString();
-    }
+    }*/
 
     @Autowired
     private UserRepository userRepo;
@@ -52,6 +47,10 @@ public class APIGateway {
 
     @RequestMapping(value = "/")
     public String viewHomePage() {
+        return "temp";
+    }
+    @RequestMapping(value = "/index")
+    public String showMainPage() {
         return "index";
     }
 
@@ -92,11 +91,12 @@ public class APIGateway {
         ResponseEntity<JSONObject[]> respones = this.client.getForEntity(report_URL, JSONObject[].class);
         List<String> date = new ArrayList<String>();
         List<String> accu = new ArrayList<String>();
+        List<String> area = new ArrayList<String>();
 
         for(JSONObject obj : respones.getBody()) {
             date.add(obj.get("date").toString());
             accu.add(obj.get("accumPositives").toString());
-            System.out.println(obj.get("date").toString() + " " + obj.get("accumPositives").toString());
+          //  System.out.println(obj.get("date").toString() + " " + obj.get("accumPositives").toString());
 
         }
         System.out.println(respones.toString());
@@ -104,8 +104,35 @@ public class APIGateway {
         model.addAttribute("listReports", listReports);
         model.addAttribute("date", date);
         model.addAttribute("accu", accu);
-
+        model.addAttribute("area", accu);
 
         return "report";
     }
+    
+    /*
+    @GetMapping("/threeWeeks")
+    public String threeWeekslistReports(Model model) {
+    	
+        ResponseEntity<JSONObject[]> respones = this.client.getForEntity(report_URL + "/predict", JSONObject[].class);
+        List<String> date = new ArrayList<String>();
+        List<String> accu = new ArrayList<String>();
+        List<String> area = new ArrayList<String>();
+
+        for(JSONObject obj : respones.getBody()) {
+            date.add(obj.get("date").toString());
+            accu.add(obj.get("accumPositives").toString());
+          //  System.out.println(obj.get("date").toString() + " " + obj.get("accumPositives").toString());
+
+        }
+        JSONObject[] listReports = respones.getBody();
+        model.addAttribute("listReports", listReports);
+        model.addAttribute("date", date);
+        model.addAttribute("accu", accu);
+        model.addAttribute("area", accu);
+
+        return "report";
+    }
+*/
+    
+    
 }

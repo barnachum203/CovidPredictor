@@ -11510,6 +11510,22 @@ header.masthead h1, header.masthead .h1 {
   font-size: 16px;
   padding: 16px 32px;
 }
+/* mine */
+
+#parent {
+  display: flex;
+}
+#narrow {
+width:40%;
+  background: #f5e9c9;
+  /* Just so it's visible */
+}
+#wide {
+  flex: 1;
+  /* Grow to rest of container */
+  background: #ded7d5;
+  /* Just so it's visible */
+}
 
 canvas{
     margin: 0 auto;
