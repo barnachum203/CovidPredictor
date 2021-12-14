@@ -49,25 +49,20 @@ public class ReportService {
 //    public int calculateReport(Person[] reports){
 //
 //    }
-    //Get prediction by date
+    //Get prediction reports between dates (must be in the analytics DB to be shown)
     public  String getPredictionBetweenDatesReport(String endDate ,String startDate) throws JsonProcessingException {   // range of prediction ... need to add another date
     	
     //	String startDate  = LocalDate.parse(endDate).minusDays(14).toString();  // currently checking 15 days
     	List<Report> reports = reportRepository.getReportsBetweenDatesQuery(startDate,endDate);
-    	System.out.println("start");
     	for(Report report : reports) {
     		System.out.println(report);
     	}
-    	System.out.println("end");
-        ObjectMapper mapper = new ObjectMapper();
- 	    String json = mapper.writeValueAsString(reports); 
-     	return json;
+        return createJson(reports);
     }
     
 
     public void autoRecieveData(String date, int positives, int numberOfPCRs,int central, int north,int south ) {  // when db inserted to msdb, this function will be called
         Report newReport =  this.reportRepository.findByDate(date);
-        System.out.println("auto called");
     	if (newReport == null) {
         	newReport = new Report();
         }
@@ -81,11 +76,9 @@ public class ReportService {
     	newReport.setSouthCount( south);
 
         newReport.setPositivePCR(positives);        
-        System.out.println(newReport);
         reportRepository.save(newReport);
     
         newReport.setAccumPositives(calculateHelper(date).getAccumPositives());
-        System.out.println(newReport.getAccumPositives());
         reportRepository.save(newReport);
 
     }
@@ -112,7 +105,17 @@ public class ReportService {
 	    return calculateHelper(date);
     }
 
-    private  Report calculateHelper(String date) {    //return prediction of positive patient
+    
+    /**
+     * This function create new daily report
+     * @param date
+     * @param positives
+     * @param numberOfPCRs
+     * F()= TODAY.POSITIVES + R[date.minusDays(1)].positives
+     * -0.8*(R[date.minusDays(7)].positives-R[date.minusDays(8)])
+     * -0.2*(R[date.minusDays(14)]-R[date.minusDays(15)])
+     */
+    private  Report calculateHelper(String date) {    //  calculate prediction algorithm as assumed 
     	
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         LocalDate oneWeekAgo = LocalDate.parse(date,formatter).minusDays(7);
@@ -153,8 +156,6 @@ public class ReportService {
         
         int sum =(int) (todayPositive + accumYesterday - less80Percent  - less20Percent)    ;
      
-        int[] arr = {0,0,1,1,2,2};   
-
         int accumNorthYesterday =   yesterdayDate   == null?    0:yesterdayDate.getNorthCount();      
         int accumSouthYesterday =   yesterdayDate   == null?    0:yesterdayDate.getSouthCount();      
         int accumCenterYesterday =   yesterdayDate   == null?    0:yesterdayDate.getCenterCount();      
@@ -162,21 +163,32 @@ public class ReportService {
         currDateReport.setCenterCount( currDateReport.getCenterCount() + accumCenterYesterday );
         currDateReport.setNorthCount(  currDateReport.getNorthCount() + accumNorthYesterday);
     	currDateReport.setSouthCount( currDateReport.getSouthCount() + accumSouthYesterday);
-        int randomArea = new Random().nextInt(arr.length);
       
         int toReduce =  less80Percent  + less20Percent;
         if( toReduce > 0)
-        	subscribe(currDateReport, toReduce , arr[randomArea]);  
+        	subscribe(currDateReport, toReduce );  
     	
         
         currDateReport.setAccumPositives(sum);
 
-//        System.out.println(currDateReport);
         reportRepository.save(currDateReport);
         return currDateReport;
     }
+    private void subscribe(Report currDateReport ,int toReduce ) {  // reduce area of patient when calculateHelper run
+    	int reducNorth=0 , reduceCenter=0, reduceSouth=0;
+    	
+    	reduceSouth = toReduce/3;
+    	reducNorth = toReduce/3;
+    	reduceCenter = toReduce - reducNorth - reduceSouth;
 
-    private void subscribe(Report currDateReport ,int toReduce ,int randomArea) {
+		currDateReport.setNorthCount(currDateReport.getNorthCount() - reducNorth);
+		currDateReport.setSouthCount(currDateReport.getSouthCount() - reduceSouth);
+		currDateReport.setCenterCount(currDateReport.getCenterCount() - reduceCenter);
+
+
+    	
+    }
+/*    private void subscribe(Report currDateReport ,int toReduce ,int randomArea) {
 
      	int negativeNum;
     	switch(randomArea) {
@@ -224,7 +236,7 @@ public class ReportService {
     		break;
     	}
     }
-
+*/
     
     private String createJson(Report report) throws JsonProcessingException {
     	 ObjectMapper mapper = new ObjectMapper();
@@ -239,51 +251,5 @@ public class ReportService {
    }
     
     
- 
-    /**
-     * This function create new daily report
-     * @param date
-     * @param positives
-     * @param numberOfPCRs
-     * F()= TODAY.POSITIVES + R[date.minusDays(1)].positives
-     * -0.8*(R[date.minusDays(7)].positives-R[date.minusDays(8)])
-     * -0.2*(R[date.minusDays(14)]-R[date.minusDays(15)])
-     */
- /*   public void calculateDailyReport(String date, int positives, int numberOfPCRs) {
-        Report newReport = new Report();
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDate oneWeekAgo = LocalDate.parse(date,formatter).minusDays(7);
-        LocalDate twoWeeksAgo = LocalDate.parse(date,formatter).minusDays(14);
-
-
-        //Test
-        System.out.println("yesterday: " + oneWeekAgo);
-        System.out.println("twoWeeksAgo: " + twoWeeksAgo);
-
-        newReport.setPatients(numberOfPCRs);
-        newReport.setDate(date);
-        newReport.setPositiveRatio(positives/(numberOfPCRs-positives));
-        System.out.println(newReport.getPositiveRatio());
-
-        Report day7Report = this.reportRepository.findByDate(oneWeekAgo.toString());
-        if (day7Report == null) {
-            day7Report = new Report();
-            System.out.println("DAY 7 NOT EXISTS !");
-            day7Report.setPositivePCR(0);
-        }
-        Report day14Report = reportRepository.findByDate(twoWeeksAgo.toString());
-        if (day14Report == null) {
-            day14Report = new Report();
-            System.out.println("DAY 14 NOT EXISTS !");
-            day14Report.setPositivePCR(0);
-        }
-        double numberOfHospitalized = positives * 0.2 + day7Report.getPositivePCR() + 0.2 - day14Report.getPositivePCR() * 0.2;
-        newReport.setPositivePCR((int) numberOfHospitalized);
-
-        System.out.println(newReport);
-        reportRepository.save(newReport);
-    }*/
-
 
 }

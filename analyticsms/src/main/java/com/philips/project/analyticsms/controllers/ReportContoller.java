@@ -37,17 +37,32 @@ public class ReportContoller {
         return reportService.getReports();
     }
 
-    @GetMapping("date")               // returns how many positive in specific date
+    @GetMapping("date")               // get date in body, returns Report (not json)
     public Report getReportByDate(String date){
         return reportService.getReportByDate(date);
     }
+    
+    @GetMapping("report/{date}") //get date in url,return json of report
+	public String calculateDailyReport(@PathVariable String date) throws JsonProcessingException {
+    	Report report = reportService.calculateDailyReport(date);
+        ObjectMapper mapper = new ObjectMapper();
+	    String json = mapper.writeValueAsString(report);
+    	return json  ;
+	}
 
     
     @GetMapping("predict/{startDate}/{endDate}")               // predicts how many positive in specific date
     public String getPredictionReportsBetweenDates(@PathVariable String startDate ,@PathVariable String endDate) throws JsonProcessingException{
          return reportService.getPredictionBetweenDatesReport(endDate , startDate );
     }
+
+    /*//calculateDailyReport doing this
+    @GetMapping("predict/{specificDate}")               // predicts how many positive in specific date
+    public String getPredictionReportsBetweenDates(@PathVariable String date ) throws JsonProcessingException{
+         return reportService.getPredictionBetweenDatesReport( date );
+    }*/
     
+
 
 
     @PostMapping("daily")
@@ -65,25 +80,7 @@ public class ReportContoller {
        reportService.autoRecieveData((String)j.get("date"),(int)positives,(int)numberOfPCRs,(int)south,(int)north,(int)central);
     }
 
-    @GetMapping("report/{date}")
-	public String calculateDailyReport(@PathVariable String date) throws JsonProcessingException {
-    	Report report = reportService.calculateDailyReport(date);
-        ObjectMapper mapper = new ObjectMapper();
-	    String json = mapper.writeValueAsString(report);
-    	return json  ;
-	}
 
     
-    
-    
-    
-    
- /*   @PostMapping("daily/{date}/{positives}/{numberOfPCRs}")
-    public void calculateDailyReport(@PathVariable String date,@PathVariable int positives,@PathVariable int numberOfPCRs){
 
-        System.out.println("Date: " + date);
-        System.out.println("positives:  " + positives);
-        System.out.println("numberOfPCRs: " + numberOfPCRs);
-        reportService.calculateDailyReport(date, positives, numberOfPCRs);
-    }*/
 }

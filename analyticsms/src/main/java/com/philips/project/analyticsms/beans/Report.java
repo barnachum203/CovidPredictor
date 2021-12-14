@@ -18,7 +18,7 @@ public class Report {
     private int accumPositives;
     private int northCount;
     private int southCount;
-    private int CenterCount;
+    private int centerCount;
 
     public int calculatePatients(){
         //TODO: implement calculator
