@@ -52,8 +52,8 @@ public class ReportContoller {
 
     
     @GetMapping("predict/{startDate}/{endDate}")               // predicts how many positive in specific date
-    public String getPredictionReportsBetweenDates(@PathVariable String startDate ,@PathVariable String endDate) throws JsonProcessingException{
-         return reportService.getPredictionBetweenDatesReport(endDate , startDate );
+    public List<Report> getPredictionReportsBetweenDates(@PathVariable String startDate ,@PathVariable String endDate) throws JsonProcessingException{
+        return reportService.getPredictionBetweenDatesReport(endDate , startDate );
     }
 
     /*//calculateDailyReport doing this

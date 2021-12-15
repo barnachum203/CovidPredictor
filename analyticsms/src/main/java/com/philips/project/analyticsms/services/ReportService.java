@@ -50,14 +50,15 @@ public class ReportService {
 //
 //    }
     //Get prediction reports between dates (must be in the analytics DB to be shown)
-    public  String getPredictionBetweenDatesReport(String endDate ,String startDate) throws JsonProcessingException {   // range of prediction ... need to add another date
+    public  List<Report> getPredictionBetweenDatesReport(String endDate ,String startDate) throws JsonProcessingException {   // range of prediction ... need to add another date
     	
     //	String startDate  = LocalDate.parse(endDate).minusDays(14).toString();  // currently checking 15 days
     	List<Report> reports = reportRepository.getReportsBetweenDatesQuery(startDate,endDate);
     	for(Report report : reports) {
     		System.out.println(report);
     	}
-        return createJson(reports);
+//        return createJson(reports);
+        return reports;
     }
     
 
@@ -154,7 +155,6 @@ public class ReportService {
        
         
         int sum =(int) (todayPositive + accumYesterday - less80Percent  - less20Percent)    ;
-     
         int accumNorthYesterday =   yesterdayDate   == null?    0:yesterdayDate.getNorthCount();      
         int accumSouthYesterday =   yesterdayDate   == null?    0:yesterdayDate.getSouthCount();      
         int accumCenterYesterday =   yesterdayDate   == null?    0:yesterdayDate.getCenterCount();      
@@ -179,10 +179,14 @@ public class ReportService {
     	reduceSouth = toReduce/3;
     	reducNorth = toReduce/3;
     	reduceCenter = toReduce - reducNorth - reduceSouth;
-    	if(reduceCenter<0)
+    	if(reduceCenter<0){
     		reduceCenter = 0;
-		currDateReport.setNorthCount(currDateReport.getNorthCount() - reducNorth);
-		currDateReport.setSouthCount(currDateReport.getSouthCount() - reduceSouth);
+        }
+        if(currDateReport.getNorthCount() - reducNorth > 0)
+            currDateReport.setNorthCount(currDateReport.getNorthCount() - reducNorth);
+        if(currDateReport.getSouthCount() - reduceSouth > 0)
+            currDateReport.setSouthCount(currDateReport.getSouthCount() - reduceSouth);
+        if(currDateReport.getCenterCount() - reduceCenter > 0)
 		currDateReport.setCenterCount(currDateReport.getCenterCount() - reduceCenter);
 
 
