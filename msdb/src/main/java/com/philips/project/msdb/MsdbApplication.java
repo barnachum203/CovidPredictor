@@ -22,9 +22,9 @@ public class MsdbApplication {
             @Override
             public void run() {
 				while(true){
-            	hospitalService.sendWarningReports();
+					hospitalService.sendWarningReports();
                 try {
-					Thread.sleep(500000);
+					Thread.sleep(50000);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}

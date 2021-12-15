@@ -10,11 +10,14 @@ import java.util.Locale;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
+import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import com.github.javafaker.Faker;
 import com.philips.project.msdb.beans.AreaEnum;
@@ -30,8 +33,11 @@ public class HospitalService {
 	private PersonRepository personRepo;
 	@Autowired
     private JavaMailSender javaMailSender;
+    @Autowired
+    private RestTemplate client;
 	int cntHospital=0;
 	String dateToday="";
+	private static String report_URL = "http://localhost:8081/report/report/";
 	
     public void addHospital(Hospital hospital) throws Exception {
         Hospital existing = this.hospitalRepository.findById(hospital.getId());
@@ -73,8 +79,28 @@ public class HospitalService {
 				NumOfBeds[i] = calcNumOfBeds(areaEnum.name());
 			// get postive person number in area in date 
 			System.out.println(dtf.format(now));
-			postiveRes[i] = personRepo.getPostiveOfCorona(areaEnum.ordinal(),dtf.format(now),true);
-			System.out.println("postiveRes  "+postiveRes[i]);
+			//postiveRes[i] = personRepo.getPostiveOfCorona(areaEnum.ordinal(),dtf.format(now),true);
+	        String url = report_URL + dtf.format(now);
+
+	        try {
+	        	ResponseEntity<JSONObject> response = client.getForEntity(url ,JSONObject.class);
+	        	switch(i) {
+	        	  case 0:
+	        		  postiveRes[i] = (int) response.getBody().get("northCount");
+	        	    break;
+	        	  case 1:
+	        		  postiveRes[i] = (int) response.getBody().get("southCount");
+	        	    break;
+	        	  case 2:
+	        		  postiveRes[i] = (int) response.getBody().get("centerCount");
+		        	    break;
+	        	  default:
+	        	    // code block
+	        	}
+	        } catch (Exception e) {
+	            System.out.println("Error getting from analytics" + e);
+	        }
+
 			System.out.println("postiveRes  "+postiveRes[i] + "  NumOfBeds " + NumOfBeds[i]);
 			
 			if(cntHospital > 0 && (dateToday.equals(dtf.format(now))==false))
