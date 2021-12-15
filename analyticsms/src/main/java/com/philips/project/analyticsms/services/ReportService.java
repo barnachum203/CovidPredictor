@@ -180,7 +180,8 @@ public class ReportService {
     	reduceSouth = toReduce/3;
     	reducNorth = toReduce/3;
     	reduceCenter = toReduce - reducNorth - reduceSouth;
-
+    	if(reduceCenter>0)
+    		reduceCenter = 0;
 		currDateReport.setNorthCount(currDateReport.getNorthCount() - reducNorth);
 		currDateReport.setSouthCount(currDateReport.getSouthCount() - reduceSouth);
 		currDateReport.setCenterCount(currDateReport.getCenterCount() - reduceCenter);
