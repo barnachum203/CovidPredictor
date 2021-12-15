@@ -36,10 +36,10 @@ public class Task implements CommandLineRunner {
     public void run(String... args) throws Exception {
 
         LocalDate date = LocalDate.now();
-        date = date.minusDays(6L); // DEV: API get update once a week so ignore lsat 6 days.
-        date = date.minusDays(14L);
+        date = date.minusDays(30L); // DEV: API get update once a week so ignore lsat 6 days.
+//        date = date.minusDays(14L);
 
-        for (int i = 0; i <= 20; i++) {
+        for (int i = 0; i <= 30; i++) {
             List<Person> existing = this.personRepository.findByResultDate(date.toString());
             List<Person> personListAPI = new ArrayList<>();
             if (existing.size() == 0) {
@@ -57,6 +57,8 @@ public class Task implements CommandLineRunner {
             System.out.println(">>Set random hospitals");
             this.hospitalService.setRandomData();
         }
+
+
         System.out.println("Done!");
     }
 
