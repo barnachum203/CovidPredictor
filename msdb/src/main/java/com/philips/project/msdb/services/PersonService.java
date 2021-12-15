@@ -71,7 +71,7 @@ public class PersonService implements Validator {
 			return personsList;
 		}
 		String criterion = "{\"result_date\":" + "\"" + date + "\"" + "}";
-		String url = "https://data.gov.il/api/action/datastore_search?resource_id=dcf999c1-d394-4b57-a5e0-9d014a62e046&limit=2000";
+		String url = "https://data.gov.il/api/action/datastore_search?resource_id=dcf999c1-d394-4b57-a5e0-9d014a62e046&limit=20000";
 
 		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url).queryParam("filters", criterion);
 
