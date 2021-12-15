@@ -141,8 +141,8 @@ public class HospitalService {
         hospital.setName(faker.company().name());
         hospital.setArea(AreaEnum.generateRandomArea());
         hospital.setCityId(faker.number().numberBetween(1, 150));
-        hospital.setContactEmail(faker.internet().emailAddress());
-        hospital.setNumOfBeds(faker.number().numberBetween(50, 1200));
+        hospital.setContactEmail("mahdi19950@gmail.com");
+        hospital.setNumOfBeds(faker.number().numberBetween(50, 300));
 
         return hospital;
     }
