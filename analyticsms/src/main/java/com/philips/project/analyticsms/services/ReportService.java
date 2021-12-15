@@ -102,6 +102,7 @@ public class ReportService {
 		    yesterdayDate =  this.reportRepository.findByDate(oneDayAgo.toString());
 		    runOnDayes = runOnDayes.plusDays(1);
 	    }
+	    
 	    return calculateHelper(date);
     }
 
@@ -109,8 +110,6 @@ public class ReportService {
     /**
      * This function create new daily report
      * @param date
-     * @param positives
-     * @param numberOfPCRs
      * F()= TODAY.POSITIVES + R[date.minusDays(1)].positives
      * -0.8*(R[date.minusDays(7)].positives-R[date.minusDays(8)])
      * -0.2*(R[date.minusDays(14)]-R[date.minusDays(15)])
@@ -180,7 +179,7 @@ public class ReportService {
     	reduceSouth = toReduce/3;
     	reducNorth = toReduce/3;
     	reduceCenter = toReduce - reducNorth - reduceSouth;
-    	if(reduceCenter>0)
+    	if(reduceCenter<0)
     		reduceCenter = 0;
 		currDateReport.setNorthCount(currDateReport.getNorthCount() - reducNorth);
 		currDateReport.setSouthCount(currDateReport.getSouthCount() - reduceSouth);
